@@ -1,3 +1,9 @@
+import netP5.*;
+import oscP5.*;
+
+OscP5 osc;
+NetAddress supercollider;
+
 int i = 0;
 int j = 0;
 int k = 0;
@@ -10,11 +16,15 @@ int ballPosy;
 int ballSize = 800;
 PShape golfClub, golfFlag, clubStick, flagStick, flag, clubSquare;
 
-
 void setup() {
  size(1200, 800);
  background(0);
  smooth();
+ 
+ osc = new OscP5(this, 12000);
+ supercollider = new NetAddress("127.0.0.1", 57120);
+ 
+ //osc.plug(this, "moveBall", "/moveBallX");
 }
 
 void draw() {
@@ -25,7 +35,7 @@ void draw() {
   drawGolfFlag();
   drawGolfClub();
   if(ballPosX <= 1000){
-    ballPosX = ballPosX+ballFps;
+    //ballPosX = ballPosX+ballFps;
     drawBall(ballPosX);
   }
   else{
@@ -37,7 +47,7 @@ void draw() {
 }
 
 
-void drawBall(int posX){
+void drawBall(float posX){
   fill(255,255,255);
   circle(posX, 700, 30);
 }
@@ -84,4 +94,24 @@ void fallBall(int size){
   fill(255,255,255);
   circle(600, 400, size);
   ballSize = ballSize - fallFps;
+}
+
+void moveBall(float posx){
+  println("ORIGINAL POS!!!! ", posx);
+  println("RECEIVED POS!!!! ", round(posx));
+  ballPosX = round(posx);
+}
+
+void oscEvent(OscMessage msg) {
+  if (msg.checkAddrPattern("/sc3p5")) {
+    //x = msg.get(0).floatValue(); // receive floats from sc
+  }
+  else if(msg.checkAddrPattern("/moveBallX")){
+    println("THIS IS THE MESSAGE: ", msg);
+    println("THIS IS THE CONTENT: ", msg.get(2));
+  }
+  else{
+    println("THIS IS THE MESSAGE: ", msg);
+    println("THIS IS THE CONTENT!!!: ", msg.typetag());
+  }
 }
