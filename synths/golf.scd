@@ -46,3 +46,22 @@ b = Synth(\bolaRodando, [\bus, c]);
 
 r.play;
 
+//Crowd noise
+(SynthDef(\crowd,
+{
+
+		Out.ar([0,1],
+			BPF.ar(WhiteNoise.ar, Rand(800, 1200), Rand(0.1,0.9))*LFSaw.ar(Rand(0.2,0.8), 0.5)
+		)
+}).play;)
+
+3.do(Synth(\crowd))
+
+//Fall noise
+(SynthDef(\drop,
+{
+		e=Env.new([10, 9, 7, 3, 0],[0.5, 1, 2, 3], \linear);
+		{EnvGen.kr(e, doneAction: 2)*SinOsc.ar(Line.kr(1000, 50, 6.5), mul:0.1)}.play
+}
+).play;
+)
