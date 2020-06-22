@@ -6,45 +6,39 @@
 
 //Bola rebotando
 // Env controla velocidad de la bola
+//NetAddr.localAddr;
 
-/*(
-c = Bus.control(s, 1);
 
-r = Routine({
-	inf.do({
-		var val = c.getSynchronous;
-		n.sendMsg(\posicionBolaX, val.postln);
-		0.1.wait;
-	});
-});
-)*/
-
-NetAddr.localAddr;
+//Direccion osc de processing, puerto
 n=NetAddr("192.168.0.3", 12000);
 
+//Definicion de mensaje osc
 OSCFunc({|msg|
   msg.postln;  //debug
   n.sendMsg(*msg);
 }, '/moveBallX');
 
 
-SynthDef(\bolaRodando, {|bus|
+//Definicion de mensaje osc
+OSCFunc({|msg|
+  msg.postln;  //debug
+  n.sendMsg(*msg);
+}, '/ballFall');
+
+
+//Synth que simula bola en movimiento
+SynthDef(\bolaRodando, {
 	var t, envPaneo, paneoPos, output;
 	envPaneo = Env.new([-1, 1], [3, 2, 4]);
 	t = TBall.ar(in: LFNoise0.ar(50), g:5, damp:0.01, friction: 0.01);
 	paneoPos = EnvGen.kr(envPaneo, doneAction: 2);
 	output = Pan2.ar(Ringz.ar(t * 10, 1200, 0.1), paneoPos);
-	SendReply.ar(output, '/moveBallX', paneoPos);//60 is updaterate (fps)
+
+	//Parametros de SendReply trigger, nombre del mensaje, valores flotantes
+	SendReply.ar(output, '/moveBallX', paneoPos);
 
 	Out.ar(0, output);
 }).add;
-
-
-
-
-b = Synth(\bolaRodando, [\bus, c]);
-
-r.play;
 
 //Crowd noise
 (SynthDef(\crowd,
@@ -53,15 +47,47 @@ r.play;
 		Out.ar([0,1],
 			BPF.ar(WhiteNoise.ar, Rand(800, 1200), Rand(0.1,0.9))*LFSaw.ar(Rand(0.2,0.8), 0.5)
 		)
-}).play;)
-
-3.do(Synth(\crowd))
+}).add;
+)
 
 //Fall noise
 (SynthDef(\drop,
 {
+		var output, dropEnv;
 		e=Env.new([10, 9, 7, 3, 0],[0.5, 1, 2, 3], \linear);
-		{EnvGen.kr(e, doneAction: 2)*SinOsc.ar(Line.kr(1000, 50, 6.5), mul:0.1)}.play
-}
-).play;
+		dropEnv=EnvGen.kr(e, doneAction: 2);
+		output = dropEnv*SinOsc.ar(Line.kr(1000, 50, 6.5), mul:0.1);
+		SendReply.ar(output, '/ballFall', dropEnv);
+		Out.ar(0, output);
+}).add;
 )
+
+
+(
+{
+	Synth(\crowd);
+
+	Synth(\bolaRodando);
+
+	4.0.wait;
+
+	Synth(\drop);
+
+	1.0.wait;
+
+	//Synth(\event);
+
+	//1.0.wait;
+
+	//Synth(\event);
+}.fork;
+)
+
+
+
+
+
+
+
+
+
