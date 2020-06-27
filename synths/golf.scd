@@ -26,6 +26,17 @@ OSCFunc({|msg|
 }, '/ballFall');
 
 
+(SynthDef(\golpe,
+{
+		var time, sig, freq, ratio, output;
+		time = 1.2;
+		sig = PinkNoise.ar(0.5);
+		ratio = 0.1;
+		freq = 1000;
+		output = Resonz.ar(sig, freq, ratio)*Line.ar(10, 0, time, doneAction:2);
+		Out.ar([0,1], output);
+}).add;)
+
 //Synth que simula bola en movimiento
 SynthDef(\bolaRodando, {
 	var t, envPaneo, paneoPos, output;
@@ -65,6 +76,7 @@ SynthDef(\bolaRodando, {
 
 (
 {
+	Synth(\golpe);
 	Synth(\crowd);
 
 	Synth(\bolaRodando);
