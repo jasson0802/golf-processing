@@ -10,7 +10,7 @@
 
 
 //Direccion osc de processing, puerto
-n=NetAddr("192.168.0.3", 12000);
+//n=NetAddr("127.0.0.1" 57120); //JP
 
 //Definicion de mensaje osc
 OSCFunc({|msg|
@@ -45,7 +45,7 @@ SynthDef(\bolaRodando, {
 {
 
 		Out.ar([0,1],
-			BPF.ar(WhiteNoise.ar, Rand(800, 1200), Rand(0.1,0.9))*LFSaw.ar(Rand(0.2,0.8), 0.5)
+			BPF.ar(WhiteNoise.ar, Rand(800, 1200), Rand(0.1,0.9))*LFCub.ar(Rand(0.02,0.2), 0.5)
 		)
 }).add;
 )
@@ -82,9 +82,6 @@ SynthDef(\bolaRodando, {
 	//Synth(\event);
 }.fork;
 )
-
-
-
 
 
 
