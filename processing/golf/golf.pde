@@ -48,9 +48,6 @@ void draw() {
     //Dibujar palo de golf
     drawGolfClub();
     
-    if(golfClubPosX+55 < 145){
-        golfClubPosX = golfClubPosX+1;
-    }
   }
   else if(currentScene == "ballFalling"){
     //Pintar fondo negro
@@ -72,8 +69,16 @@ void moveBall(float posx){
   }
   else
   {
-    ballPosX = (posx + 1) * 500;
+    float newPosX = ((posx + 1) * 500)+200;
+    if(newPosX<=500){
+      ballPosX = newPosX;
+    }
   }
+}
+
+//Mover posicion X del palo de golf
+void moveClub(float posx){  
+   golfClubPosX = (10-posx)*10;
 }
 
 //Dibujar bola
@@ -148,6 +153,9 @@ void oscEvent(OscMessage msg) {
     //Asignar escena actual y ejecutar acciones
     currentScene = "ballFalling";
     fallBall(msg.get(2).floatValue());
+  }
+  else if(msg.checkAddrPattern("/moveClub")){
+    moveClub(msg.get(2).floatValue());
   }
   else{
     println("THIS IS THE MESSAGE: ", msg);

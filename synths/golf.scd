@@ -10,7 +10,7 @@
 
 
 //Direccion osc de processing, puerto
-//n=NetAddr("127.0.0.1" 57120); //JP
+n=NetAddr("192.168.0.3", 12000); //JP
 
 //Definicion de mensaje osc
 OSCFunc({|msg|
@@ -25,20 +25,27 @@ OSCFunc({|msg|
   n.sendMsg(*msg);
 }, '/ballFall');
 
+//Definicion de mensaje osc
+OSCFunc({|msg|
+  msg.postln;  //debug
+  n.sendMsg(*msg);
+}, '/moveClub');
 
-(SynthDef(\golpe,
+
+(SynthDef(\movimiento,
 {
-		var time, sig, freq, ratio, output;
-		time = 1.2;
+		arg time = 1.2, freq = 1000;
+		var sig, ratio, output, movementTime;
 		sig = PinkNoise.ar(0.5);
 		ratio = 0.1;
-		freq = 1000;
-		output = Resonz.ar(sig, freq, ratio)*Line.ar(10, 0, time, doneAction:2);
+		movementTime = Line.ar(10, 0, time, doneAction:2);
+		output = Resonz.ar(sig, freq, ratio)*movementTime;
+		SendReply.ar(output, '/moveClub', movementTime);
 		Out.ar([0,1], output);
 }).add;)
 
 //Synth que simula bola en movimiento
-SynthDef(\bolaRodando, {
+(SynthDef(\bolaRodando, {
 	var t, envPaneo, paneoPos, output;
 	envPaneo = Env.new([-1, 1], [3, 2, 4]);
 	t = TBall.ar(in: LFNoise0.ar(50), g:5, damp:0.01, friction: 0.01);
@@ -49,7 +56,7 @@ SynthDef(\bolaRodando, {
 	SendReply.ar(output, '/moveBallX', paneoPos);
 
 	Out.ar(0, output);
-}).add;
+}).add;)
 
 //Crowd noise
 (SynthDef(\crowd,
@@ -74,26 +81,49 @@ SynthDef(\bolaRodando, {
 )
 
 
+
+//Golpe
+(SynthDef(\sonido_golpe, {
+    |out = 0, amp = 0.5, pan = 0, dur = 1|
+    var env1, env2, snd, ruido;
+
+    // noise 1 - 4 short repeats
+    env1 = EnvGen.ar(
+        Env.new(
+            [0, 1, 0, 0.9, 0, 0.7, 0, 0.5, 0],
+            [0.001, 0.009, 0, 0.008, 0, 0.01, 0, 0.03],
+            [0, -3, 0, -3, 0, -3, 0, -4]
+        )
+    );
+
+    ruido = WhiteNoise.ar(env1);
+    ruido = HPF.ar(ruido, 1000);
+    ruido = LPF.ar(ruido, 7600);
+    ruido = BPF.ar(ruido, 1230, 0.7, 0.7);
+
+    //snd = noise1 + noise2;
+	snd = ruido;
+    snd = snd * 2;
+    snd = snd.softclip;
+
+    Out.ar(out, Pan2.ar(snd,pan,amp));
+}).add;)
+
 (
 {
-	Synth(\golpe);
-	Synth(\crowd);
-
+	Synth(\movimiento, [\time, 2, \freq, 400]);
+	1.5.wait;
+	Synth(\sonido_golpe);
+	1.wait;
 	Synth(\bolaRodando);
-
+	Synth(\crowd);
 	4.0.wait;
-
 	Synth(\drop);
-
 	1.0.wait;
-
-	//Synth(\event);
-
-	//1.0.wait;
-
-	//Synth(\event);
 }.fork;
 )
+
+
 
 
 
