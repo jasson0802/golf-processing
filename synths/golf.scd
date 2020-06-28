@@ -10,7 +10,7 @@
 
 
 //Direccion osc de processing, puerto
-n=NetAddr("192.168.0.3", 12000);
+//n=NetAddr("127.0.0.1" 57120); //JP
 
 //Definicion de mensaje osc
 OSCFunc({|msg|
@@ -25,6 +25,17 @@ OSCFunc({|msg|
   n.sendMsg(*msg);
 }, '/ballFall');
 
+
+(SynthDef(\golpe,
+{
+		var time, sig, freq, ratio, output;
+		time = 1.2;
+		sig = PinkNoise.ar(0.5);
+		ratio = 0.1;
+		freq = 1000;
+		output = Resonz.ar(sig, freq, ratio)*Line.ar(10, 0, time, doneAction:2);
+		Out.ar([0,1], output);
+}).add;)
 
 //Synth que simula bola en movimiento
 SynthDef(\bolaRodando, {
@@ -45,7 +56,7 @@ SynthDef(\bolaRodando, {
 {
 
 		Out.ar([0,1],
-			BPF.ar(WhiteNoise.ar, Rand(800, 1200), Rand(0.1,0.9))*LFSaw.ar(Rand(0.2,0.8), 0.5)
+			BPF.ar(WhiteNoise.ar, Rand(800, 1200), Rand(0.1,0.9))*LFCub.ar(Rand(0.02,0.2), 0.5)
 		)
 }).add;
 )
@@ -65,6 +76,7 @@ SynthDef(\bolaRodando, {
 
 (
 {
+	Synth(\golpe);
 	Synth(\crowd);
 
 	Synth(\bolaRodando);
@@ -82,9 +94,6 @@ SynthDef(\bolaRodando, {
 	//Synth(\event);
 }.fork;
 )
-
-
-
 
 
 
