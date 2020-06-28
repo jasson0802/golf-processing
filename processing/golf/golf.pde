@@ -13,6 +13,7 @@ int fallFps = 1;
 float ballPosX = 200.0;
 int ballPosy;
 int ballSize = 800;
+float golfClubPosX=0.0;
 PShape golfClub, golfFlag, clubStick, flagStick, flag, clubSquare;
 
 //Condiciones de la pantalla al cargar
@@ -33,19 +34,23 @@ void draw() {
   //Fondo verde
   background(79, 121, 66);
   
-  //Dibujar hoyo
-  drawHole();
-  
-  //Dibujar banderilla
-  drawGolfFlag();
-  
-  //Dibujar palo de golf
-  drawGolfClub();
-  
   //Revisar escena actual
-  if(currentScene == "ballMoving"){
+  if(currentScene != "ballFalling"){
     //Dibujar bola en posicion x, 700 
     drawBall(ballPosX);
+    
+    //Dibujar hoyo
+    drawHole();
+  
+    //Dibujar banderilla
+    drawGolfFlag();
+  
+    //Dibujar palo de golf
+    drawGolfClub();
+    
+    if(golfClubPosX+55 < 145){
+        golfClubPosX = golfClubPosX+1;
+    }
   }
   else if(currentScene == "ballFalling"){
     //Pintar fondo negro
@@ -88,13 +93,15 @@ void drawGolfClub(){
   golfClub = createShape(GROUP);
 
   // Make two shapes
-  clubSquare = createShape(RECT, 200, 750, 55, 55);
-  clubSquare.setFill(color(255, 40, 0));
+  clubSquare = createShape(RECT, 50+golfClubPosX, 690, 55, 30);
+  clubSquare.setFill(color(169,169,169));
   
-  clubStick = createShape(LINE, 500, 400, 200, 670);  
+  clubStick = createShape(LINE, 55+golfClubPosX, 400, 55+golfClubPosX, 690);  
+  clubStick.setStroke(200);
+  clubStick.setStrokeWeight(5);
 
-  golfFlag.addChild(clubSquare);
-  golfFlag.addChild(clubStick);
+  golfClub.addChild(clubSquare);
+  golfClub.addChild(clubStick);
 
   shape(golfClub);
 }
