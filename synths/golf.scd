@@ -55,6 +55,7 @@ OSCFunc({|msg|
 	//Parametros de SendReply trigger, nombre del mensaje, valores flotantes
 	SendReply.ar(output, '/moveBallX', paneoPos);
 
+	output = Delay1.ar(in: output, mul: 1, add: 0);
 	Out.ar(0, output);
 }).add;)
 
@@ -81,13 +82,11 @@ OSCFunc({|msg|
 )
 
 
-
 //Golpe
 (SynthDef(\sonido_golpe, {
     |out = 0, amp = 0.5, pan = 0, dur = 1|
     var env1, env2, snd, ruido;
 
-    // noise 1 - 4 short repeats
     env1 = EnvGen.ar(
         Env.new(
             [0, 1, 0, 0.9, 0, 0.7, 0, 0.5, 0],
@@ -101,10 +100,10 @@ OSCFunc({|msg|
     ruido = LPF.ar(ruido, 7600);
     ruido = BPF.ar(ruido, 1230, 0.7, 0.7);
 
-    //snd = noise1 + noise2;
 	snd = ruido;
     snd = snd * 2;
     snd = snd.softclip;
+	snd = GVerb.ar(snd, roomsize: 10, revtime: 3, damping: 0.5, inputbw: 0.5, spread: 15, drylevel: 1, earlyreflevel: 0.7, taillevel: 0.5, maxroomsize: 300, mul: 1, add: 0);
 
     Out.ar(out, Pan2.ar(snd,pan,amp));
 }).add;)
